@@ -2,25 +2,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Ultimate Challenge</title>
+    <title>Joshua's Ultimate Challenge</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; transition: background 0.5s; }
         
-        /* Program 1: Split Background Style */
-        body.split-mode { 
-            background: linear-gradient(to right, #c0392b 50%, #2ecc71 50%); 
-        }
-
-        /* Program 2: Game Mode Style */
+        /* Background Styles */
+        body.split-mode { background: linear-gradient(to right, #c0392b 50%, #2ecc71 50%); }
         body.game-mode {background: linear-gradient(to right, #c0392b 25%, #2ecc71 25%, #1a1a1a 50%); }
 
-        canvas { display: none; }
-        body.game-mode canvas { display: block; }
+        
 
         #ui { 
             position: absolute; top: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            pointer-events: none; /* Allows clicking through to the canvas if needed */
+            pointer-events: none; 
         }
 
         #msg { color: white; text-align: center; text-shadow: 3px 3px 10px rgba(0,0,0,0.5); }
@@ -35,7 +30,6 @@
         }
         button:hover { transform: scale(1.1); background: #3498db; }
 
-        /* Level Indicator */
         #levelDisplay {
             position: absolute; top: 80px; left: 20px; color: #3498db;
             font-size: 1.5rem; font-weight: bold; display: none;
@@ -49,9 +43,11 @@
         <button id="toggleBtn">START GAME!!!</button>
         <div id="msg">
             <h1>Joshua's Game!</h1>
-            <h2 id=xi></h2>
-            <h2>Use ARROWS or the letters W.A.S.D. to Move & Jump<br>WARNING:Watch out for the red blocks which are the lava blocks.<br>GOAL:The yellow block. PLAYER: You are the lightblue block.<br>WARNING: If something loops continously like going forward then do the thing thats looping to stop.<br> EXAMPLE: Problem: Looping forward continously? Answer: Go forward to stop.</h2>
-            <h1 id=ll></h1>
+            <h2 id=xi></h>
+            <h2>Use ARROWS or WASD to Move & Jump<br>
+            WARNING: Watch out for red lava blocks.<br>
+            GOAL: Yellow block | PLAYER: Light blue block.<br>WARNING: If something loops continously like going forward then do the thing thats looping to stop.<br> EXAMPLE: Problem: Looping forward continously? | Answer: Go forward to stop.</h2>
+            <h1 id=ll>If you are done playing then press the refesh Button.</h1>
         </div>
     </div>
 
@@ -65,8 +61,7 @@
     const btn = document.getElementById("toggleBtn");
     const lvlText = document.getElementById("levelDisplay");
 
-    // MUSIC SETUP
-    // Using a sample track from Pixabay/SoundHelix
+    // Audio Setup
     const bgMusic = new Audio("https://s3.amazonaws.com/homeschool-life/assignments/3771/564708-1398913_6D0A9F7A1EEF2AED533BD0C7B5ACDE83.mp3");
     bgMusic.loop = true;
     bgMusic.volume = 0.5;
@@ -77,8 +72,8 @@
     
     let platforms = [];
     let hazards = [];
-
     const keys = {};
+
     window.addEventListener("keydown", e => keys[e.code] = true);
     window.addEventListener("keyup", e => keys[e.code] = false);
 
@@ -88,19 +83,11 @@
             btn.innerText = "EXIT TO MENU";
             btn.style.position = "absolute";
             btn.style.top = "20px";
-            
-            // Play Music (Browsers allow this now because of the click)
-            bgMusic.play().catch(e => console.log("Music blocked: ", e));
-            
+            bgMusic.play().catch(e => console.log("Music blocked"));
             startLevel(1);
+            requestAnimationFrame(gameLoop);
         } else {
-            body.classList.replace("game-mode", "split-mode");
-            btn.innerText = "Restart?";
-            document.getElementById('ll').innerHTML="If you are done playing then press the refesh Button on the key board.";
-            document.getElementById('xi').innerHTML="Just a reminder.";
-            btn.style.position = "static";
-            bgMusic.currentTime = 0; // Reset song
-            bgMusic.pause();
+            location.reload(); 
         }
     };
 
@@ -114,167 +101,124 @@
         player.y = canvas.height - 150;
         player.dy = 0;
         
-        if (lvl === 1)
-        {
-        goal.x = canvas.width - 120;
-        goal.y = canvas.height - 270;
-        }
-        else 
-        {
-        goal.x = canvas.width - 100;
-        goal.y = canvas.height - 115;  
-        }
-        
         platforms = [];
         hazards = [];
 
         if (lvl === 1) {
-            // Level 1: 2 moving hazard to time your jump
+            goal.x = canvas.width - 100;
+        goal.y = canvas.height - 115;
+            hazards.push({ x: 500, y: canvas.height - 150, w: 150, h: 100, speed: 8, range: 1200, startX: 10 });
+        } else if (lvl === 2) {
+           goal.x = canvas.width - 120;
+        goal.y = canvas.height - 270;
             hazards.push({ x: 500, y: canvas.height - 150, w: 150, h: 100, speed: 8, range: 1200, startX: 10 });
             platforms.push({ x: canvas.width/1.1 - 70, y: canvas.height - 200, w: 140, h: 20 });
             hazards.push({ x: 1200, y: canvas.height - 270, w: 30, h: 70, speed: 1, range: 1, startX: 1 });
             hazards.push({ x: 1240, y: canvas.height - 205, w: 65, h: 5, speed: 1, range: 1, startX: 1 });
-        } else {
-            // Level 2: High platform and 3 hazards
+        } else if (lvl === 3) {
+            goal.x = canvas.width - 100;
+        goal.y = canvas.height - 115;
             platforms.push({ x: canvas.width/1.75 - 150, y: canvas.height - 210, w: 300, h: 20 });
             hazards.push({ x: canvas.width/1.50 - 150, y: canvas.height - 215, w: 30, h: 35, speed: 8, range: 180, startX: canvas.width/1.75 - 150 });
             hazards.push({ x: 400, y: canvas.height - 85, w: 70, h: 35, speed: 10, range: 400, startX: 400 });
             hazards.push({ x: 1000, y: canvas.height - 150, w: 70, h: 100, speed: 1, range: 100, startX:1000 });
              hazards.push({ x: 1255, y: canvas.height - 55, w: 70, h: 5, speed: 1, range: 1, startX: 1 });
+            
         }
     }
 
-    function checkCollision(rect1, rect2) {
-        return rect1.x < rect2.x + rect2.w &&
-               rect1.x + rect1.w > rect2.x &&
-               rect1.y < rect2.y + rect2.h &&
-               rect1.y + rect1.h > rect2.y;
-    }
-
     function update() {
-    if (body.classList.contains("game-mode")) {
-        // CONTROLS
         if (keys["ArrowRight"] || keys["KeyD"]) player.x += player.speed;
         if (keys["ArrowLeft"] || keys["KeyA"]) player.x -= player.speed;
-        
-        // --- ADD THE WALL BOUNDARIES HERE ---
-        if (player.x < 0) player.x = 0;
-        if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
-        // ------------------------------------
-         // PLATFORM COLLISION (Updated for Level 1)
-            platforms.forEach(p => {
-                if (player.x < p.x + p.w && 
-                    player.x + player.w > p.x &&
-                    player.y + player.h >= p.y && 
-                    player.y + player.h <= p.y + p.h + player.dy) {
-                    
-                    player.y = p.y - player.h;
-                    player.dy = 0;
-                    player.grounded = true;
-                }
-            });
         
         if ((keys["Space"] || keys["ArrowUp"] || keys["KeyW"]) && player.grounded) {
             player.dy = -player.jump;
             player.grounded = false;
         }
 
-            // PHYSICS
-            player.dy += player.grav;
-            player.y += player.dy;
+        player.dy += player.grav;
+        player.y += player.dy;
 
-            // FLOOR COLLISION
-            let groundY = canvas.height - 50;
-            player.grounded = false;
-            if (player.y + player.h > groundY) {
-                player.y = groundY - player.h;
+        // Boundaries
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
+
+        // Floor Collision
+        let groundY = canvas.height - 50;
+        if (player.y + player.h > groundY) {
+            player.y = groundY - player.h;
+            player.dy = 0;
+            player.grounded = true;
+        }
+
+        // Platform Collisions
+        platforms.forEach(p => {
+            if (player.x < p.x + p.w && player.x + player.w > p.x &&
+                player.y + player.h > p.y && player.y + player.h < p.y + p.h + player.dy + 2) {
+                player.y = p.y - player.h;
                 player.dy = 0;
                 player.grounded = true;
             }
+        });
 
-            // PLATFORM COLLISION
-            platforms.forEach(p => {
-                if (player.x < p.x + p.w && player.x + player.w > p.x &&
-                    player.y + player.h > p.y && player.y + player.h < p.y + p.h + player.dy) {
-                    player.y = p.y - player.h;
-                    player.dy = 0;
-                    player.grounded = true;
-                }
-            });
+        // Hazard Logic
+        hazards.forEach(h => {
+            h.x += h.speed;
+            if (h.x > h.startX + h.range || h.x < h.startX) h.speed *= -1;
+            // Collision check
+            if (player.x < h.x + h.w && player.x + player.w > h.x && 
+                player.y < h.y + h.h && player.y + player.h > h.y) {
+                startLevel(currentLevel); // Reset level on death
+            }
+        });
 
-            // HAZARD MOVEMENT & DEATH
-            hazards.forEach(h => {
-                h.x += h.speed;
-                if (h.x > h.startX + h.range || h.x < h.startX) h.speed *= -1;
-                if (checkCollision(player, h)) {
-                    startLevel(currentLevel); // Reset level on hit
-                }
-            });
-
-            // GOAL CHECK
-            if (checkCollision(player, goal)) {
-                if (currentLevel === 1) {
-                    alert("LEVEL 1 COMPLETE!");
-                    startLevel(2);
-                } else {
-                    alert("YOU ARE THE CHAMPION!");
-                    body.classList.replace("game-mode", "split-mode");
+        // Goal Logic
+        if (player.x < goal.x + goal.w && player.x + player.w > goal.x && 
+            player.y < goal.y + goal.h && player.y + player.h > goal.y) {
+            if (currentLevel < 3) {
+                startLevel(currentLevel + 1);
+            } else {
+                alert("YOU CONQUERED THE ULTIMATE CHALLENGE!");
+                body.classList.replace("game-mode", "split-mode");
                     btn.innerText = "START GAME AGAIN!!!";
-                    document.getElementById('ll').innerHTML="If you are done playing then press the refesh Button on the key board.";
-                    document.getElementById('xi').innerHTML="WOW!!! you are awesome. If you want to play again click the button above and...<br>Just a reminder.";
                     btn.style.position = "static";
                     bgMusic.pause();
                     bgMusic.currentTime = 0; // Reset song
-                }
             }
         }
-        draw();
-        requestAnimationFrame(update);
     }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Background Decoration
-        ctx.fillStyle = "rgba(255,255,255,0.05)";
-        ctx.font = "bold 150px Arial";
-        ctx.fillText("Go!", canvas.width - 350, canvas.height/2 + 50);
-
-        // Draw Ground
+        
+        // Draw Floor
         ctx.fillStyle = "#333";
         ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
-
-        // Draw Platforms
-        ctx.fillStyle = "#555";
-        platforms.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
-
-        // Draw Hazards (Red)
-        ctx.fillStyle = "#ff4757";
-        hazards.forEach(h => {
-            ctx.fillRect(h.x, h.y, h.w, h.h);
-            // Simple detail
-            ctx.fillStyle = "white";
-            ctx.fillRect(h.x + 10, h.y + 10, 5, 5);
-            ctx.fillStyle = "#ff4757";
-        });
-
-        // Draw Goal (Gold)
-        ctx.fillStyle = goal.color;
-        ctx.fillRect(goal.x, goal.y, goal.w, goal.h);
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(goal.x, goal.y, goal.w, goal.h);
 
         // Draw Player
         ctx.fillStyle = player.color;
         ctx.fillRect(player.x, player.y, player.w, player.h);
-        // Player Eyes
-        ctx.fillStyle = "black";
-        ctx.fillRect(player.x + 20, player.y + 10, 5, 5);
+
+        // Draw Platforms
+        ctx.fillStyle = "white";
+        platforms.forEach(p => ctx.fillRect(p.x, p.y, p.w, p.h));
+
+        // Draw Hazards
+        ctx.fillStyle = "#ff4d4d";
+        hazards.forEach(h => ctx.fillRect(h.x, h.y, h.w, h.h));
+
+        // Draw Goal
+        ctx.fillStyle = goal.color;
+        ctx.fillRect(goal.x, goal.y, goal.w, goal.h);
     }
 
-    window.onresize = () => startLevel(currentLevel);
-    update();
+    function gameLoop() {
+        if (body.classList.contains("game-mode")) {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+    }
 </script>
 </body>
 </html>
